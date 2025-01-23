@@ -1,4 +1,5 @@
 import { RoleType, Status } from "../enums";
+export * from "./user";
 
 export interface Login {
   email: string;
