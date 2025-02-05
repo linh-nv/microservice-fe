@@ -1,9 +1,9 @@
 import axios from "axios";
 import { cookie } from "./cookie";
 import { authService } from "./auth";
-import { API_BASE_URL, endpoint } from "../config/endpoint";
+import { routes } from "../routes/routes";
 
-const errorUrl = endpoint.error;
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
@@ -56,7 +56,7 @@ axiosInstance.interceptors.response.use(
       }
     } catch (refreshError) {
       cookie.removeTokens();
-      location.replace(errorUrl[401]);
+      location.replace(routes.errors[401]);
 
       return Promise.reject(refreshError);
     }

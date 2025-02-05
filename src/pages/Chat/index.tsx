@@ -7,7 +7,7 @@ interface Message {
   message: string;
 }
 
-const App = () => {
+const ChatUI = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [message, setMessage] = useState("");
   const [username, setUsername] = useState("");
@@ -82,4 +82,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default ChatUI;

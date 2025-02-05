@@ -3,20 +3,27 @@
 @tailwind utilities;
 
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
 
+  --primary-color: #1b74e4;
+  --secondary-color: #65676b;
+  --background-light: #f0f2f5;
+  --background-hover: #e4e6eb;
+  --active-bg: #e7f3ff;
+  --text-color: #65676b;
+  --button-hover-opacity: 0.8;
+}
+.montserrat-root {
+  font-family: "Montserrat", serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+  line-height: 1.5;
+  letter-spacing: 0.5px;
+}
 a {
   font-weight: 500;
   color: #646cff;
@@ -32,6 +39,8 @@ body {
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  background-color: #f2f4f7;
+  overflow-x: hidden;
 }
 
 h1 {
@@ -55,7 +64,7 @@ button:hover {
 }
 button:focus,
 button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  outline: none;
 }
 
 @media (prefers-color-scheme: light) {
@@ -68,5 +77,35 @@ button:focus-visible {
   }
   button {
     background-color: #f9f9f9;
+  }
+}
+
+.error-message {
+  color: #ff4d4d;
+}
+
+.app-layout {
+  display: flex;
+  flex-direction: column;
+
+  .app-body {
+    display: flex;
+    flex-grow: 1;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 1rem;
+  }
+
+  .sidebar {
+    background-color: #f0f2f5;
+    position: sticky;
+    padding: 1rem;
+  }
+
+  .content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    background-color: #f2f4f7;
   }
 }

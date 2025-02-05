@@ -2,28 +2,25 @@ import Cookies from "js-cookie";
 
 export const cookie = {
   setToken(tokenData: {
-    access_token: string;
-    refresh_token: string;
-    expires_in: number;
-    refresh_expires_in: number;
+    token: string;
+    refreshToken: string;
+    expiredAt: string;
   }) {
-    const { access_token, refresh_token, expires_in, refresh_expires_in } =
-      tokenData || {};
+    const { token, refreshToken, expiredAt } = tokenData;
 
-    if (!access_token || !refresh_token) {
-      console.error("Access token or refresh token is missing.");
+    if (!token || !refreshToken || !expiredAt) {
+      console.error(
+        "Access token, refresh token, or expiration date is missing."
+      );
       return;
     }
 
-    const accessTokenExpires = new Date(
-      new Date().getTime() + expires_in * 1000
-    );
-    const refreshTokenExpires = new Date(
-      new Date().getTime() + refresh_expires_in * 1000
-    );
+    const accessTokenExpires = new Date(expiredAt);
+    const refreshTokenExpires = new Date();
+    refreshTokenExpires.setDate(refreshTokenExpires.getDate() + 7);
 
-    Cookies.set("access_token", access_token, { expires: accessTokenExpires });
-    Cookies.set("refresh_token", refresh_token, {
+    Cookies.set("access_token", token, { expires: accessTokenExpires });
+    Cookies.set("refresh_token", refreshToken, {
       expires: refreshTokenExpires,
     });
     Cookies.set(
