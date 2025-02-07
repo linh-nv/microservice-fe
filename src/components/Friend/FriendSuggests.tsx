@@ -1,8 +1,9 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
-import { Spin } from "antd";
+import { Empty, Spin } from "antd";
 import { FriendGrid } from "./FriendGrid";
 import { FriendRequest } from "../../types/friend";
 import { useNotification } from "../../hook/notify";
+import { friendService } from "../../services/friend";
 
 interface PaginatedResponse {
   data: FriendRequest[];
@@ -16,24 +17,29 @@ interface FriendRequestsProps {
   fetchFriends: (page: number) => Promise<PaginatedResponse>;
 }
 
+interface CardStates {
+  [key: string]: {
+    isAccept: boolean;
+    isDecline: boolean;
+    loading: boolean;
+  };
+}
+
 export const FriendSuggests: React.FC<FriendRequestsProps> = ({
   title,
   fetchFriends,
 }) => {
-  // State management for friends data and pagination
   const [friends, setFriends] = useState<FriendRequest[]>([]);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const { notify } = useNotification();
-
+  const [cardStates, setCardStates] = useState<CardStates>({});
   // Ref for intersection observer
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadingRef = useRef<HTMLDivElement>(null);
 
-  // Load more data when scrolling
   const loadFriends = useCallback(async () => {
-    // Prevent API calls when loading or no more data
     if (loading || !hasMore) return;
 
     setLoading(true);
@@ -42,8 +48,19 @@ export const FriendSuggests: React.FC<FriendRequestsProps> = ({
       const response = await fetchFriends(page);
 
       setHasMore(page < response.totalPages);
-
-      // Append new data to existing friends
+      setCardStates((prevStates) => {
+        const newStates = { ...prevStates };
+        response.data.forEach((friend) => {
+          if (!newStates[friend.id]) {
+            newStates[friend.id] = {
+              isAccept: false,
+              isDecline: false,
+              loading: false,
+            };
+          }
+        });
+        return newStates;
+      });
       setFriends((prevFriends) => [...prevFriends, ...response.data]);
       setPage((prevPage) => prevPage + 1);
     } catch (error) {
@@ -71,16 +88,13 @@ export const FriendSuggests: React.FC<FriendRequestsProps> = ({
       }
     };
 
-    // Create new observer
     const observer = new IntersectionObserver(handleObserver, options);
     observerRef.current = observer;
 
-    // Observe loading div if it exists
     if (loadingRef.current) {
       observer.observe(loadingRef.current);
     }
 
-    // Cleanup observer on unmount
     return () => {
       if (observerRef.current) {
         observerRef.current.disconnect();
@@ -88,32 +102,72 @@ export const FriendSuggests: React.FC<FriendRequestsProps> = ({
     };
   }, [loadFriends]);
 
-  // Handle friend request actions
-  const handleAccept = useCallback(async (id: string) => {
-    setFriends((prevFriends) =>
-      prevFriends.filter((friend) => friend.id !== id)
-    );
-  }, []);
+  const handleInvitation = useCallback(
+    async (id: string) => {
+      setCardStates((prev) => ({
+        ...prev,
+        [id]: {
+          ...prev[id],
+          loading: true,
+        },
+      }));
 
-  const handleDecline = useCallback(async (id: string) => {
+      try {
+        await friendService.sendInvitation(id);
+
+        setCardStates((prev) => ({
+          ...prev,
+          [id]: {
+            ...prev[id],
+            isAccept: true,
+          },
+        }));
+      } catch (error) {
+        notify("error", {
+          message: "Không thể gửi lời mời kết bạn",
+        });
+      } finally {
+        setCardStates((prev) => ({
+          ...prev,
+          [id]: {
+            ...prev[id],
+            loading: false,
+          },
+        }));
+      }
+    },
+    [notify]
+  );
+
+  const handleRemove = useCallback(async (id: string) => {
     setFriends((prevFriends) =>
       prevFriends.filter((friend) => friend.id !== id)
     );
   }, []);
 
   return (
-    <div className="w-full">
-      <h2 className="text-xl font-semibold mb-4">{title}</h2>
-
-      <FriendGrid
-        friends={friends}
-        titleAccept={'Kết bạn'}
-        titleDecline={'Xóa'}
-        onAccept={handleAccept}
-        onDecline={handleDecline}
-      />
-
-      {/* Loading indicator */}
+    <div className="w-full py-8 border-b border-gray-200">
+      <h2 className="text-xl font-bold mb-4">{title}</h2>
+      {friends && friends.length > 0 ? (
+        <FriendGrid
+          titleAccept="Kết bạn"
+          titleDecline="Gỡ"
+          titleAccepted="Đã gửi lời mời ..."
+          titleDeclined="Đã gỡ ..."
+          friends={friends}
+          getCardState={(id: string) =>
+            cardStates[id] || {
+              isAccept: false,
+              isDecline: false,
+              loading: false,
+            }
+          }
+          onAccept={handleInvitation}
+          onDecline={handleRemove}
+        />
+      ) : (
+        <Empty />
+      )}
       <div ref={loadingRef} className="w-full flex justify-center py-4">
         {loading && <Spin />}
       </div>

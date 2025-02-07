@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { Button, Empty, Spin } from "antd";
+import { Button, Empty } from "antd";
 import { FriendGrid } from "./FriendGrid";
 import { FriendRequest } from "../../types/friend";
 import { useNotification } from "../../hook/notify";
@@ -12,7 +12,7 @@ interface PaginatedResponse {
   totalPages: number;
 }
 
-interface FriendRequestsProps {
+interface FriendWaitAcceptProps {
   title: string;
   fetchFriends: (page: number) => Promise<PaginatedResponse>;
 }
@@ -25,13 +25,14 @@ interface CardStates {
   };
 }
 
-export const FriendRequests: React.FC<FriendRequestsProps> = ({
+export const FriendWaitAccept: React.FC<FriendWaitAcceptProps> = ({
   title,
   fetchFriends,
 }) => {
   const [friends, setFriends] = useState<FriendRequest[]>([]);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [waiting, setWaiting] = useState(true);
   const [hasMore, setHasMore] = useState(true);
   const [cardStates, setCardStates] = useState<CardStates>({});
   const { notify } = useNotification();
@@ -79,46 +80,9 @@ export const FriendRequests: React.FC<FriendRequestsProps> = ({
     }
   }, [loadFriends, page]);
 
-  const handleAccept = useCallback(
-    async (id: string) => {
-      setCardStates((prev) => ({
-        ...prev,
-        [id]: {
-          ...prev[id],
-          loading: true,
-        },
-      }));
-
-      try {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        setCardStates((prev) => ({
-          ...prev,
-          [id]: {
-            ...prev[id],
-            isAccept: true,
-          },
-        }));
-      } catch (error) {
-        notify("error", {
-          message: "Không thể chấp nhận lời mời kết bạn",
-        });
-      } finally {
-        setCardStates((prev) => ({
-          ...prev,
-          [id]: {
-            ...prev[id],
-            loading: false,
-          },
-        }));
-      }
-    },
-    [notify]
-  );
-
   const handleDecline = useCallback(async (id: string) => {
     try {
-      await friendService.rejectFriendRequest(id);
+      await friendService.deleteInvitation(id);
     } catch (error) {
       console.error(error);
     } finally {
@@ -144,8 +108,9 @@ export const FriendRequests: React.FC<FriendRequestsProps> = ({
       </div>
       {friends && friends.length > 0 ? (
         <FriendGrid
-          titleAccept="Xác nhận"
-          titleDecline="Xóa"
+          waiting={waiting}
+          titleAccept="Đang chờ xác nhận"
+          titleDecline="Hủy"
           titleAccepted="Đã chấp nhận"
           titleDeclined="Đã từ chối"
           friends={friends}
@@ -156,7 +121,7 @@ export const FriendRequests: React.FC<FriendRequestsProps> = ({
               loading: false,
             }
           }
-          onAccept={handleAccept}
+          onAccept={() => {}}
           onDecline={(id: string) => handleDecline(id)}
         />
       ) : (

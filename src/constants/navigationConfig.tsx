@@ -18,7 +18,7 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
   },
   {
     id: "groups",
-    path: routes.friend,
+    path: routes.friend.home,
     icon: <HiUserGroup />,
     label: "Groups",
   },

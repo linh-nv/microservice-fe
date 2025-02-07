@@ -6,8 +6,14 @@ import { IoPersonAddSharp } from "react-icons/io5";
 import { FriendRequests } from "../../components/Friend/FriendRequests";
 import { friendService } from "../../services/friend";
 import { FriendSuggests } from "../../components/Friend/FriendSuggests";
+import { FriendWaitAccept } from "../../components/Friend/FriendWaitAccept";
+import { useNavigate } from "react-router-dom";
+import { routes } from "../../routes/routes";
+
 
 const Navigation = () => {
+  const navigate = useNavigate();
+
   const items = [
     {
       key: "home",
@@ -17,6 +23,7 @@ const Navigation = () => {
         </div>
       ),
       label: "Trang chủ",
+      onClick: () => navigate(routes.friend.home),
     },
     {
       key: "friend_requests",
@@ -44,6 +51,7 @@ const Navigation = () => {
         </div>
       ),
       label: "Tất cả bạn bè",
+      onClick: () => navigate(routes.friend.all),
     },
   ];
 
@@ -63,21 +71,31 @@ const Navigation = () => {
 };
 
 const Content = () => {
-  const fetchFriendRequests = async () => {
-    const friendRequests = await friendService.getPendingRequests();
+  const fetchFriendRequests = async (page: number) => {
+    const friendRequests = await friendService.getPendingRequests(page);
+    return friendRequests;
+  };
+
+  const fetchSendPendingRequests = async (page: number) => {
+    const friendRequests = await friendService.getSendPendingRequests(page);
     return friendRequests;
   };
 
   const fetchFriendSuggestions = async (page: number) => {
-    const friendSuggestions = await friendService.getFriendSuggestions(page);    
+    const friendSuggestions = await friendService.getFriendSuggestions(page);
     return friendSuggestions;
   };
 
   return (
-    <div className="px-4 py-6">
+    <div className="p-4">
       <FriendRequests
         title="Lời mời kết bạn"
         fetchFriends={fetchFriendRequests}
+      />
+
+      <FriendWaitAccept
+        title="Đang chờ chấp thuận"
+        fetchFriends={fetchSendPendingRequests}
       />
 
       <FriendSuggests

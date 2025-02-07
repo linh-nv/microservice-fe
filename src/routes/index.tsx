@@ -15,14 +15,18 @@ const NotFound = lazy(() => import("../pages/Errors/404"));
 const App = () => {
   return (
     <Routes>
-      <Route path="auth" element={<AuthLayout />}>
+      <Route path='auth' element={<AuthLayout />}>
         <Route path={routes.auth.login} element={<Login />} />
         <Route path={routes.auth.register} element={<Register />} />
       </Route>
-      <Route path="" element={<AppLayout />}>
+      <Route path='' element={<AppLayout />}>
         <Route path={routes.home} element={<Home />} />
         <Route path={routes.errors[401]} element={<Unauthorized />} />
-        <Route path={routes.friend} element={<Friend />} />
+        {/* <Route element={<OrtherLayout/>}></Route> */}
+        <Route path={routes.friend.home}>
+          <Route path='' element={<Friend />} />
+          {/* <Route path={routes.friend.all} element={<FriendAll />} /> */}
+        </Route>
         <Route path={routes.chat} element={<ChatUI />} />
       </Route>
       <Route path="*" element={<NotFound />} />
