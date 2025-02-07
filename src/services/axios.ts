@@ -16,6 +16,7 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
   async (config) => {
     let accessToken = cookie.getAccessToken();
+    
     const accessTokenExpires = cookie.getAccessTokenExpires();
     const now = new Date().getTime();
 
@@ -23,10 +24,10 @@ axiosInstance.interceptors.request.use(
     if (accessTokenExpires && now > accessTokenExpires) {
       try {
         const response = await authService.refreshToken();
-        accessToken = response.data.access_token;
+        accessToken = response.data.token;
       } catch (error) {
         cookie.removeTokens();
-        window.location.href = "/login";
+        window.location.href = "auth/login";
 
         return Promise.reject(error);
       }
@@ -55,8 +56,8 @@ axiosInstance.interceptors.response.use(
         return axiosInstance(error.config);
       }
     } catch (refreshError) {
-      cookie.removeTokens();
-      location.replace(routes.errors[401]);
+      // cookie.removeTokens();
+      // location.replace(routes.errors[401]);
 
       return Promise.reject(refreshError);
     }

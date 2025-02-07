@@ -5,8 +5,9 @@ export const cookie = {
     token: string;
     refreshToken: string;
     expiredAt: string;
+    deviceId?: string;
   }) {
-    const { token, refreshToken, expiredAt } = tokenData;
+    const { token, refreshToken, expiredAt, deviceId } = tokenData;
 
     if (!token || !refreshToken || !expiredAt) {
       console.error(
@@ -19,10 +20,11 @@ export const cookie = {
     const refreshTokenExpires = new Date();
     refreshTokenExpires.setDate(refreshTokenExpires.getDate() + 7);
 
-    Cookies.set("access_token", token, { expires: accessTokenExpires });
-    Cookies.set("refresh_token", refreshToken, {
-      expires: refreshTokenExpires,
-    });
+    if (deviceId) {
+      Cookies.set("deviceId", deviceId);
+    }
+    Cookies.set("access_token", token);
+    Cookies.set("refresh_token", refreshToken);
     Cookies.set(
       "access_token_expires",
       accessTokenExpires.getTime().toString()
@@ -31,6 +33,10 @@ export const cookie = {
       "refresh_token_expires",
       refreshTokenExpires.getTime().toString()
     );
+  },
+
+  getDeviceId() {
+    return Cookies.get("deviceId");
   },
 
   getAccessToken() {
@@ -52,6 +58,7 @@ export const cookie = {
   },
 
   removeTokens() {
+    Cookies.remove("deviceId");
     Cookies.remove("access_token");
     Cookies.remove("refresh_token");
     Cookies.remove("access_token_expires");
