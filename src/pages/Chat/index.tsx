@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { io } from "socket.io-client";
 
-const socket = io("http://192.168.0.108:8080");
+const socketUrl = `${window.location.protocol}//${window.location.hostname}:8080`;
+const socket = io(socketUrl);
 interface Message {
   sender: string;
   message: string;
