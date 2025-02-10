@@ -1,10 +1,11 @@
+import { GetFriendsOptions } from "../shared/interface";
 import axiosInstance from "./axios";
 
 export const friendService = {
-  async getPendingRequests(page: number) {
+  async getPendingRequests(options: number) {
     const response = await axiosInstance.get("/friends/requests/pending", {
       params: {
-        page: Number(page),
+        options,
       },
     });
 
@@ -15,20 +16,20 @@ export const friendService = {
     return await axiosInstance.delete(`/friends/requests/${receiverId}/reject`);
   },
 
-  async getSendPendingRequests(page: number) {
+  async getSendPendingRequests(options: number) {
     const response = await axiosInstance.get("/friends/requests/send/pending", {
       params: {
-        page: Number(page),
+        options,
       },
     });
 
     return response.data;
   },
 
-  async getFriendSuggestions(page: number) {
+  async getFriendSuggestions(options: number) {
     const response = await axiosInstance.get("/friends/suggestions", {
       params: {
-        page: Number(page),
+        options,
       },
     });
     return response.data;
@@ -43,6 +44,18 @@ export const friendService = {
   },
 
   async deleteInvitation(receiverId: string) {
-    return await axiosInstance.delete(`/friends/requests/send/${receiverId}/delete`);
+    return await axiosInstance.delete(
+      `/friends/requests/send/${receiverId}/delete`
+    );
+  },
+
+  async getFriends(options?: GetFriendsOptions) {
+    const response = await axiosInstance.get(`/friends`, {
+      params: {
+        options,
+      },
+    });
+
+    return response.data;
   },
 };

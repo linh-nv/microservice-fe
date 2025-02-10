@@ -8,6 +8,7 @@ const Login = lazy(() => import("../pages/Login"));
 const Register = lazy(() => import("../pages/Register"));
 const Home = lazy(() => import("../pages/Home"));
 const Friend = lazy(() => import("../pages/Friend"));
+const AllFriend = lazy(() => import("../pages/Friend/allFriend"));
 const ChatUI = lazy(() => import("../pages/Chat"));
 const Unauthorized = lazy(() => import("../pages/Errors/401"));
 const NotFound = lazy(() => import("../pages/Errors/404"));
@@ -25,7 +26,7 @@ const App = () => {
         {/* <Route element={<OrtherLayout/>}></Route> */}
         <Route path={routes.friend.home}>
           <Route path='' element={<Friend />} />
-          {/* <Route path={routes.friend.all} element={<FriendAll />} /> */}
+          <Route path={routes.friend.all} element={<AllFriend />} />
         </Route>
         <Route path={routes.chat} element={<ChatUI />} />
       </Route>

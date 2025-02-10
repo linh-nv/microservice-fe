@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { Button, Empty, Spin } from "antd";
+import { Button, Empty } from "antd";
 import { FriendGrid } from "./FriendGrid";
 import { FriendRequest } from "../../types/friend";
 import { useNotification } from "../../hook/notify";
@@ -90,7 +90,7 @@ export const FriendRequests: React.FC<FriendRequestsProps> = ({
       }));
 
       try {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await friendService.acceptInvitation(id);
 
         setCardStates((prev) => ({
           ...prev,
@@ -156,7 +156,7 @@ export const FriendRequests: React.FC<FriendRequestsProps> = ({
               loading: false,
             }
           }
-          onAccept={handleAccept}
+          onAccept={(id: string) => handleAccept(id)}
           onDecline={(id: string) => handleDecline(id)}
         />
       ) : (

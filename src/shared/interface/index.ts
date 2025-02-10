@@ -1,4 +1,4 @@
-import { RoleType, Status } from "../enums";
+import { FriendOrderBy, FriendSortBy, RoleType, Status } from "../enums";
 export * from "./user";
 
 export interface Login {
@@ -15,4 +15,28 @@ export interface Register {
   role: RoleType;
   status: Status;
   params?: JSON;
+}
+
+export interface GetFriendsOptions {
+  search?: string;
+  page?: number;
+  limit?: number;
+  sortBy?: FriendSortBy;
+  orderBy?: FriendOrderBy;
+}
+
+export interface Friends {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  status: string;
+  profile: {
+    id: string;
+    avatarUrl?: string;
+    bio?: string;
+    birthday?: string;
+    location?: string;
+  };
+  fullName: string;
 }
