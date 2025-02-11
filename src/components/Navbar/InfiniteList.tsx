@@ -2,14 +2,13 @@ import { Avatar, Divider, List, MenuProps, Skeleton } from "antd";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { UserOutlined } from "@ant-design/icons";
 import { Friends } from "../../shared/interface";
-import { ReactNode } from "react";
 import DropdownAction from "../DropdownAction";
-
+import { useNavigate } from "react-router-dom";
+import { routes } from "../../routes/routes";
 interface InfiniteListProps {
   data: Friends[];
   loadMore: () => void;
   hasMore: boolean;
-  dropdown: ReactNode;
   menuItems: (props: { id: string; lastName: string }) => MenuProps["items"];
 }
 
@@ -17,9 +16,9 @@ export const InfiniteList: React.FC<InfiniteListProps> = ({
   data,
   loadMore,
   hasMore,
-  dropdown,
-  menuItems
+  menuItems,
 }) => {
+  const navigate = useNavigate();
   return (
     <div
       id="scrollableDiv"
@@ -40,19 +39,27 @@ export const InfiniteList: React.FC<InfiniteListProps> = ({
           dataSource={data}
           renderItem={(item) => (
             <List.Item key={item.email}>
-              <List.Item.Meta
-                avatar={
-                  <Avatar
-                    size={50}
-                    src={item.profile.avatarUrl || undefined}
-                    icon={
-                      !item.profile?.avatarUrl ? <UserOutlined /> : undefined
-                    }
-                  />
-                }
-                title={<a href="#">{item.fullName}</a>}
-                description={item.email}
-              />
+              <div
+                onClick={() => navigate(routes.friend.getDetail(item.id))}
+                style={{
+                  cursor: "pointer",
+                  flex: 1,
+                }}
+              >
+                <List.Item.Meta
+                  avatar={
+                    <Avatar
+                      size={50}
+                      src={item.profile.avatarUrl || undefined}
+                      icon={
+                        !item.profile?.avatarUrl ? <UserOutlined /> : undefined
+                      }
+                    />
+                  }
+                  title={item.fullName}
+                  description={item.email}
+                />
+              </div>
               {/* Dropdown */}
               <DropdownAction
                 items={menuItems({
@@ -60,7 +67,6 @@ export const InfiniteList: React.FC<InfiniteListProps> = ({
                   lastName: item?.lastName,
                 })}
               />
-              {dropdown}
             </List.Item>
           )}
         />

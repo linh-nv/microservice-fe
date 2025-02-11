@@ -5,9 +5,11 @@ import { useNotification } from "../../hook/notify";
 import { Friends, GetFriendsOptions } from "../../shared/interface";
 import { InfiniteList } from "../../components/Navbar/InfiniteList";
 import { MenuProps } from "antd";
-import { FaFacebookMessenger, FaTrashAlt } from "react-icons/fa";
 import { ImEyeBlocked } from "react-icons/im";
 import { MdOutlineBlock } from "react-icons/md";
+import { Outlet } from "react-router-dom";
+import { RiMessengerLine } from "react-icons/ri";
+import { LiaUserTimesSolid } from "react-icons/lia";
 
 interface MenuItemsProps {
   id: string;
@@ -16,57 +18,36 @@ interface MenuItemsProps {
 
 const menuItems = ({ id, lastName }: MenuItemsProps): MenuProps["items"] => [
   {
-    label: (
-      <a
-        href="#"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <FaFacebookMessenger style={{ marginRight: 8 }} />
-        Nhắn tin cho {lastName}
-      </a>
-    ),
+    label: `Nhắn tin cho ${lastName}`,
     key: `message-${id}`,
-    title: id,
+    icon: <RiMessengerLine size={18} />,
+    title: `Nhắn tin cho ${lastName}`,
+    onClick: () => console.log(123),
   },
   {
-    label: (
-      <a
-        href="#"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <ImEyeBlocked style={{ marginRight: 8 }} />
-        Bỏ theo dõi {lastName}
-      </a>
-    ),
+    label: `Bỏ theo dõi ${lastName}`,
+    icon: <ImEyeBlocked size={18} />,
     key: `unfollow-${id}`,
+    title: `Bỏ theo dõi ${lastName}`,
+    onClick: () => console.log(123),
   },
   {
-    label: (
-      <a
-        href="#"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <MdOutlineBlock style={{ marginRight: 8 }} />
-        Chặn trang cá nhân của {lastName}
-      </a>
-    ),
+    label: `Chặn trang cá nhân của ${lastName}`,
     key: `block-${id}`,
+    title: `Chặn trang cá nhân của ${lastName}`,
+    icon: <MdOutlineBlock size={18} />,
+    onClick: () => console.log(123),
   },
   {
     type: "divider",
   },
   {
-    label: (
-      <a href="#" style={{ color: "red" }}>
-        <FaTrashAlt style={{ marginRight: 8 }} />
-        Xóa bạn bè
-      </a>
-    ),
+    label: "Xóa bạn bè",
+    icon: <LiaUserTimesSolid size={18} />,
     key: `delete-${id}`,
     danger: true,
+    title: "Xóa bạn bè",
+    onClick: () => console.log(123),
   },
 ];
 
@@ -102,7 +83,6 @@ const Navigation = () => {
     } finally {
       setLoading(false);
     }
-    console.log(loading);
   };
 
   useEffect(() => {
@@ -120,16 +100,13 @@ const Navigation = () => {
       data={friends}
       hasMore={hasMore}
       loadMore={loadMore}
-      dropdown={
-       <></> 
-      }
       menuItems={menuItems}
     />
   );
 };
 
 const Content = () => {
-  return <></>;
+  return <Outlet />;
 };
 
 const AllFriend = () => {
