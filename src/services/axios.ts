@@ -27,7 +27,7 @@ axiosInstance.interceptors.request.use(
         accessToken = response.data.token;
       } catch (error) {
         cookie.removeTokens();
-        window.location.href = "auth/login";
+        window.location.href = routes.auth.login;
 
         return Promise.reject(error);
       }

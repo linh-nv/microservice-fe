@@ -3,7 +3,7 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import { UserOutlined } from "@ant-design/icons";
 import { Friends } from "../../shared/interface";
 import DropdownAction from "../DropdownAction";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { routes } from "../../routes/routes";
 interface InfiniteListProps {
   data: Friends[];
@@ -19,14 +19,10 @@ export const InfiniteList: React.FC<InfiniteListProps> = ({
   menuItems,
 }) => {
   const navigate = useNavigate();
+  const { id: activeId } = useParams();
+
   return (
-    <div
-      id="scrollableDiv"
-      style={{
-        overflow: "auto",
-        paddingLeft: "16px",
-      }}
-    >
+    <div id="scrollableDiv">
       <InfiniteScroll
         dataLength={data.length}
         next={loadMore}
@@ -37,13 +33,27 @@ export const InfiniteList: React.FC<InfiniteListProps> = ({
       >
         <List
           dataSource={data}
+          style={{
+            transition: "background-color 0.3s",
+          }}
           renderItem={(item) => (
-            <List.Item key={item.email}>
+            <List.Item
+              key={item.email}
+              className={`
+                cursor-pointer mx-2 rounded-md transition-colors
+                ${
+                  activeId === item.id
+                    ? "bg-gray-100 hover:bg-gray-100"
+                    : "hover:bg-gray-50"
+                }
+              `}
+            >
               <div
-                onClick={() => navigate(routes.friend.getDetail(item.id))}
+                onClick={() => navigate(routes.friend.navigateDetail(item.id))}
                 style={{
                   cursor: "pointer",
                   flex: 1,
+                  marginLeft: "10px",
                 }}
               >
                 <List.Item.Meta
@@ -62,6 +72,7 @@ export const InfiniteList: React.FC<InfiniteListProps> = ({
               </div>
               {/* Dropdown */}
               <DropdownAction
+                style={{ marginRight: "10px" }}
                 items={menuItems({
                   id: item?.id,
                   lastName: item?.lastName,

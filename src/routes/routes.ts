@@ -4,7 +4,7 @@ export const routes = {
     home: "/friend",
     all: "/friend/list",
     detail: "/friend/list/:id",
-    getDetail: (id: string) => `/friend/list/${id}`,
+    navigateDetail: (id: string) => `/friend/list/${id}`,
   },
   auth: {
     login: "login",

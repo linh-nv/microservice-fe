@@ -17,7 +17,7 @@ const OrtherLayout: React.FC<OrtherLayoutProps> = ({ navigation, content }) => {
         xl={5}
         className="navigate bg-white min-h-screen shadow-md"
       >
-        <div className="fixed w-1/5">{navigation}</div>
+        <div className="fixed w-[21%]">{navigation}</div>
       </Col>
 
       {/* Nội dung chính */}
