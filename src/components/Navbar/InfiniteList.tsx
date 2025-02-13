@@ -1,4 +1,4 @@
-import { Avatar, Divider, List, MenuProps, Skeleton } from "antd";
+import { Avatar, List, MenuProps, Skeleton } from "antd";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { UserOutlined } from "@ant-design/icons";
 import { Friends } from "../../shared/interface";
@@ -28,7 +28,7 @@ export const InfiniteList: React.FC<InfiniteListProps> = ({
         next={loadMore}
         hasMore={hasMore}
         loader={<Skeleton avatar paragraph={{ rows: 1 }} active />}
-        endMessage={<Divider plain>It is all, nothing more 🤐</Divider>}
+        // endMessage={<Divider plain>It is all, nothing more 🤐</Divider>}
         scrollableTarget="scrollableDiv"
       >
         <List
@@ -40,13 +40,14 @@ export const InfiniteList: React.FC<InfiniteListProps> = ({
             <List.Item
               key={item.email}
               className={`
-                cursor-pointer mx-2 rounded-md transition-colors
+                cursor-pointer mx-3 rounded-md transition-colors
                 ${
                   activeId === item.id
                     ? "bg-gray-100 hover:bg-gray-100"
                     : "hover:bg-gray-50"
                 }
               `}
+              style={{ border: "none" }}
             >
               <div
                 onClick={() => navigate(routes.friend.navigateDetail(item.id))}
@@ -66,7 +67,7 @@ export const InfiniteList: React.FC<InfiniteListProps> = ({
                       }
                     />
                   }
-                  title={item.fullName}
+                  title={<strong>{item.fullName}</strong>}
                   description={item.email}
                 />
               </div>
