@@ -132,7 +132,7 @@ const Content = () => {
   const outlet = useOutlet();
 
   return (
-    <div className="content-container">
+    <div className="content-container container mx-auto w-full max-w-screen-xl xl:px-20">
       {outlet || (
         <Empty
           className="flex flex-col h-screen w-full text-center items-center justify-center"

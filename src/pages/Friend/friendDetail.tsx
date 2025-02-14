@@ -1,27 +1,20 @@
 import React, { useEffect, useState } from "react";
-import {
-  Layout,
-  Card,
-  Avatar,
-  Button,
-  Typography,
-  Tabs,
-  TabsProps,
-} from "antd";
+import { Layout, Card, Avatar, Button, Typography } from "antd";
 import {
   UserOutlined,
   MessageOutlined,
   GlobalOutlined,
 } from "@ant-design/icons";
 import "./profile.scss";
-import { Link, Outlet, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { userService } from "../../services/user";
 import { FriendProfile } from "../../shared/interface";
 import { FiUserCheck } from "react-icons/fi";
-import StickyBox from "react-sticky-box";
 import { ProfileHeaderSkeleton } from "./Skeleton/ProfileHeaderSkeleton";
 import { AboutSectionSkeleton } from "./Skeleton/AboutSectionSkeleton";
 import { routes } from "../../routes/routes";
+import PostCard from "../../components/Card/PostCard";
+import SocialCard from "../../components/Card/PostCard";
 
 const { Title, Text } = Typography;
 
@@ -48,47 +41,12 @@ const FriendDetail: React.FC = () => {
     }
   }, [id]);
 
-  const tabItems: TabsProps["items"] = [
-    {
-      key: "posts",
-      label: "Bài viết",
-      children: "Content of Bài viết",
-    },
-    {
-      key: "about",
-      label: "Giới thiệu",
-      children: "Content of Giới thiệu",
-    },
-    {
-      key: "friends",
-      label: "Bạn bè",
-      children: "Content of Bạn bè",
-    },
-    {
-      key: "more",
-      label: "Xem thêm",
-      children: "Content of Xem thêm",
-    },
-  ];
-
-  const renderTabBar: TabsProps["renderTabBar"] = (props, DefaultTabBar) => (
-    <StickyBox offsetTop={64} offsetBottom={20} style={{ zIndex: 1 }}>
-      <DefaultTabBar {...props} />
-    </StickyBox>
-  );
-
   return (
     <Layout className="profile-page container bg-transparent mt-5">
       <Card className="profile-header-card">
         {loading ? (
           <>
             <ProfileHeaderSkeleton />
-            <Tabs
-              defaultActiveKey="posts"
-              className="profile-tabs"
-              items={tabItems}
-              renderTabBar={renderTabBar}
-            />
           </>
         ) : (
           <>
@@ -124,25 +82,18 @@ const FriendDetail: React.FC = () => {
                 <Button icon={<UserOutlined />}>...</Button>
               </div>
             </div>
-
-            <Tabs
-              defaultActiveKey="posts"
-              className="profile-tabs"
-              items={tabItems}
-              renderTabBar={renderTabBar}
-            />
           </>
         )}
       </Card>
 
-      <div className="profile-content my-5 flex items-start gap-5">
+      <div className="profile-content my-5 flex justify-center gap-5">
         {loading ? (
           <>
             <AboutSectionSkeleton />
           </>
         ) : (
           <>
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2 w-[40%]">
               <Card className="about-section">
                 <Title level={4}>Giới thiệu</Title>
                 <div className="about-item">
@@ -179,7 +130,21 @@ const FriendDetail: React.FC = () => {
               </Card>
             </div>
             <div className="posts-section">
-              <Outlet />
+              <SocialCard
+                author={{
+                  name: "Diệu Linh",
+                  avatar: "https://static.vecteezy.com/system/resources/previews/021/495/985/non_2x/facebook-social-media-logo-icon-free-png.png",
+                  timestamp: new Date("2024-01-15"),
+                }}
+                content="em"
+                images={["https://static.vecteezy.com/system/resources/previews/021/495/985/non_2x/facebook-social-media-logo-icon-free-png.png"]}
+                reactions={[{ type: "LIKE", count: 25 }]}
+                commentCount={25}
+                shareCount={5}
+                onLike={() => console.log("Liked")}
+                onComment={() => console.log("Comment clicked")}
+                onShare={() => console.log("Share clicked")}
+              />
             </div>
           </>
         )}
