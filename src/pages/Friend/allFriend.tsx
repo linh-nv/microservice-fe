@@ -7,7 +7,7 @@ import { InfiniteList } from "../../components/Navbar/InfiniteList";
 import { Empty, Input, MenuProps } from "antd";
 import { ImEyeBlocked } from "react-icons/im";
 import { MdOutlineBlock } from "react-icons/md";
-import { useOutlet } from "react-router-dom";
+import { useNavigate, useOutlet } from "react-router-dom";
 import { RiMessengerLine } from "react-icons/ri";
 import { LiaUserTimesSolid } from "react-icons/lia";
 import Breadcrumb from "../../components/Breadcrumb";
@@ -68,6 +68,8 @@ const Navigation = () => {
   const [hasMore, setHasMore] = useState(true);
   const [totalPages, setTotalPages] = useState(1);
   const [totalFriend, setTotalFriend] = useState(1);
+  const navigate = useNavigate();
+
   const loadFriends = async (options: GetFriendsOptions) => {
     if (loading) {
       return;
@@ -108,11 +110,16 @@ const Navigation = () => {
   return (
     <div className="flex flex-col">
       <div className="mx-3  border-b pb-3">
-        <Breadcrumb title="Danh sách bạn bè" items={breadcrumbItems} />
+        <Breadcrumb
+          title="Danh sách bạn bè"
+          onBack={() => navigate(routes.friend.home)}
+          items={breadcrumbItems}
+        />
         <Input
           prefix={<SearchOutlined className="text-gray-400" />}
           placeholder="Tìm kiếm bạn bè"
           className="rounded-full bg-gray-100"
+          bordered={false}
           // value={searchText}
           // onChange={handleSearch}
         />

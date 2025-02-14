@@ -56,8 +56,8 @@ axiosInstance.interceptors.response.use(
         return axiosInstance(error.config);
       }
     } catch (refreshError) {
-      // cookie.removeTokens();
-      // location.replace(routes.errors[401]);
+      cookie.removeTokens();
+      location.replace(routes.errors[401]);
 
       return Promise.reject(refreshError);
     }

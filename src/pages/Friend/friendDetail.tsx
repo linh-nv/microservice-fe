@@ -13,7 +13,6 @@ import { FiUserCheck } from "react-icons/fi";
 import { ProfileHeaderSkeleton } from "./Skeleton/ProfileHeaderSkeleton";
 import { AboutSectionSkeleton } from "./Skeleton/AboutSectionSkeleton";
 import { routes } from "../../routes/routes";
-import PostCard from "../../components/Card/PostCard";
 import SocialCard from "../../components/Card/PostCard";
 
 const { Title, Text } = Typography;
@@ -86,7 +85,7 @@ const FriendDetail: React.FC = () => {
         )}
       </Card>
 
-      <div className="profile-content my-5 flex justify-center gap-5">
+      <div className="profile-content my-3 flex justify-center gap-3">
         {loading ? (
           <>
             <AboutSectionSkeleton />
@@ -130,21 +129,25 @@ const FriendDetail: React.FC = () => {
               </Card>
             </div>
             <div className="posts-section">
-              <SocialCard
-                author={{
-                  name: "Diệu Linh",
-                  avatar: "https://static.vecteezy.com/system/resources/previews/021/495/985/non_2x/facebook-social-media-logo-icon-free-png.png",
-                  timestamp: new Date("2024-01-15"),
-                }}
-                content="em"
-                images={["https://static.vecteezy.com/system/resources/previews/021/495/985/non_2x/facebook-social-media-logo-icon-free-png.png"]}
-                reactions={[{ type: "LIKE", count: 25 }]}
-                commentCount={25}
-                shareCount={5}
-                onLike={() => console.log("Liked")}
-                onComment={() => console.log("Comment clicked")}
-                onShare={() => console.log("Share clicked")}
-              />
+              {friend && (
+                <SocialCard
+                  author={{
+                    name: friend.fullName,
+                    avatar: friend.profile.avatarUrl,
+                    timestamp: new Date("2024-01-15"),
+                  }}
+                  content="em"
+                  images={[
+                    "https://static.vecteezy.com/system/resources/previews/021/495/985/non_2x/facebook-social-media-logo-icon-free-png.png",
+                  ]}
+                  reactions={[{ type: "LIKE", count: 25 }]}
+                  commentCount={25}
+                  shareCount={5}
+                  onLike={() => console.log("Liked")}
+                  onComment={() => console.log("Comment clicked")}
+                  onShare={() => console.log("Share clicked")}
+                />
+              )}
             </div>
           </>
         )}

@@ -1,6 +1,7 @@
 import NotFoundImage from "../../assets/images/404.svg";
 import { Button, Col } from "antd";
 import { useNavigate } from "react-router-dom";
+import { routes } from "../../routes/routes";
 
 export default function Unauthorized() {
   const navigate = useNavigate();
@@ -11,8 +12,11 @@ export default function Unauthorized() {
       <Col className="flex flex-col items-center justify-center gap-10">
         <h1 className="text-9xl font-bold mb-2 text-violet-400">Oop!!</h1>
         <h2 className="text-3xl font-semibold text-violet-800">Unauthorized</h2>
-        <Button onClick={() => navigate(-1)} type="primary">
-          Back
+        <Button
+          onClick={() => navigate(`/${routes.auth.login}`)}
+          type="primary"
+        >
+          Login
         </Button>
       </Col>
     </div>

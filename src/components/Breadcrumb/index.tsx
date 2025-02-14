@@ -2,7 +2,6 @@ import React, { ReactNode } from "react";
 import { Breadcrumb as BreadcrumbAntd } from "antd";
 import classNames from "classnames";
 import { FaArrowLeftLong } from "react-icons/fa6";
-import { useNavigate } from "react-router-dom";
 
 interface BreadcrumbItemType {
   title: ReactNode;
@@ -18,6 +17,7 @@ interface BreadcrumbProps {
   className?: string;
   separator?: ReactNode;
   style?: React.CSSProperties;
+  onBack?: () => void;
 }
 
 const Breadcrumb: React.FC<BreadcrumbProps> = ({
@@ -26,13 +26,12 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({
   className,
   separator = "/",
   style,
+  onBack,
 }) => {
-  const navigate = useNavigate();
-
   return (
     <div className="flex items-start py-2 gap-5">
       <FaArrowLeftLong
-        onClick={() => navigate(-1)}
+        onClick={onBack}
         className="opacity-50 cursor-pointer pt-1"
         size={18}
       />
