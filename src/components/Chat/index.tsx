@@ -1,201 +1,168 @@
-import React, { useState, useRef, useEffect } from "react";
-import { Input, Avatar, Button, Typography, Badge } from "antd";
-import {
-  SendOutlined,
-  PictureOutlined,
-  SmileOutlined,
-  AudioOutlined,
-  GifOutlined,
-  CloseOutlined,
-} from "@ant-design/icons";
-import classNames from "classnames";
+import React, { useState, useEffect, useCallback } from "react";
+import io, { Socket } from "socket.io-client";
+import { useNotification } from "../../hook/notify";
+import { friendService } from "../../services/friend";
 
-// First, let's define our interfaces for type safety
+// Định nghĩa kiểu cho tin nhắn
 interface Message {
-  id: string;
-  content: string;
-  timestamp: Date;
-  isOwn: boolean;
-  reaction?: string;
+  sender: string;
+  receiver: string;
+  message: string;
+  timestamp?: number;
 }
 
-interface ChatProps {
-  recipient: {
-    id: string;
-    name: string;
-    avatar?: string;
-    isOnline?: boolean;
-    lastActive?: string;
+// Định nghĩa props cho component
+interface ChatSocketProps {
+  senderId: string;
+}
+
+const ChatSocket: React.FC<ChatSocketProps> = ({ senderId }) => {
+  // State để quản lý socket, tin nhắn và người nhận
+  const [socket, setSocket] = useState<Socket | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [currentMessage, setCurrentMessage] = useState<string>("");
+  const [receiver, setReceiver] = useState<string>("");
+  const [friends, setFriends] = useState<string[]>([]);
+  const { notify } = useNotification();
+  const socketUrl = `${window.location.protocol}//${window.location.hostname}:8080`;
+
+  const getFriends = async () => {
+    try {
+      const response = await friendService.getFriends({
+        page: 1,
+        limit: 10000,
+      });
+
+      setFriends(response.data.map((item: { id: string }) => item.id));
+    } catch (error) {
+      notify("error", { message: "error" });
+    }
   };
-  messages: Message[];
-  onSendMessage: (content: string) => void;
-  onClose: () => void;
-}
-
-// Component for individual chat messages
-const ChatMessage: React.FC<{ message: Message }> = ({ message }) => {
-  return (
-    <div
-      className={classNames(
-        "flex items-end gap-2 mb-2",
-        message.isOwn ? "flex-row-reverse" : "flex-row"
-      )}
-    >
-      {!message.isOwn && <Avatar size={28} className="mb-1" />}
-      <div
-        className={classNames(
-          "px-3 py-2 rounded-2xl max-w-[70%]",
-          message.isOwn
-            ? "bg-[#0084ff] text-white rounded-br-lg"
-            : "bg-gray-100 text-gray-800 rounded-bl-lg"
-        )}
-      >
-        <Typography.Text className={message.isOwn ? "text-white" : ""}>
-          {message.content}
-        </Typography.Text>
-      </div>
-      {message.reaction && <div className="text-xs">{message.reaction}</div>}
-    </div>
-  );
-};
-
-// Main chat component
-const ChatWindow: React.FC<ChatProps> = ({
-  recipient,
-  messages,
-  onSendMessage,
-  onClose,
-}) => {
-  const [inputValue, setInputValue] = useState("");
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    getFriends();
 
-  const handleSend = () => {
-    if (inputValue.trim()) {
-      onSendMessage(inputValue.trim());
-      setInputValue("");
-    }
-  };
+    const newSocket = io(socketUrl, {
+      transports: ["websocket"],
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+    });
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
+    // Lắng nghe các sự kiện kết nối
+    newSocket.on("connect", () => {
+      console.log("Socket connected successfully");
+      // Thông báo user join
+      newSocket.emit("join", senderId);
+      // Yêu cầu tải tin nhắn cũ
+      newSocket.emit("loadMessages");
+    });
+
+    // Lắng nghe tin nhắn mới
+    newSocket.on("receiveMessage", (message: Message) => {
+      // Chỉ hiển thị tin nhắn nếu người dùng hiện tại là người gửi hoặc nhận
+      if (message.sender === senderId || message.receiver === senderId) {
+        setMessages((prevMessages) => [...prevMessages, message]);
+      }
+    });
+
+    // Lắng nghe toàn bộ tin nhắn từ server
+    newSocket.on("allMessages", (loadedMessages: Message[]) => {
+      // Lọc tin nhắn liên quan đến người dùng hiện tại
+      const userRelevantMessages = loadedMessages.filter(
+        (msg) => msg.sender === senderId || msg.receiver === senderId
+      );
+      setMessages(userRelevantMessages);
+    });
+
+    // Lắng nghe danh sách người dùng trực tuyến (nếu server hỗ trợ)
+    newSocket.on("onlineUsers", (users: string[]) => {
+      // Loại bỏ người dùng hiện tại khỏi danh sách
+      const filteredUsers = users.filter((user) => user !== senderId);
+      setFriends(filteredUsers);
+    });
+
+    // Xử lý lỗi kết nối
+    newSocket.on("connect_error", (error) => {
+      console.error("Socket connection error:", error);
+    });
+
+    // Lưu socket instance
+    setSocket(newSocket);
+
+    // Cleanup khi component unmount
+    return () => {
+      newSocket.disconnect();
+    };
+  }, [senderId, socketUrl]);
+
+  // Hàm gửi tin nhắn
+  const sendMessage = useCallback(() => {
+    if (socket && currentMessage.trim() && receiver) {
+      const messagePayload: Message = {
+        sender: senderId,
+        receiver: receiver,
+        message: currentMessage,
+        timestamp: Date.now(),
+      };
+
+      // Gửi tin nhắn thông qua socket
+      socket.emit("sendMessage", messagePayload);
+
+      // Thêm tin nhắn vào state local ngay lập tức
+      setMessages((prevMessages) => [...prevMessages, messagePayload]);
+
+      // Làm sạch input sau khi gửi
+      setCurrentMessage("");
     }
+  }, [socket, currentMessage, senderId, receiver]);
+
+  // Xử lý submit tin nhắn
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    sendMessage();
   };
 
   return (
-    <div className="fixed bottom-0 right-4 w-[328px] bg-white rounded-t-lg shadow-lg">
-      {/* Chat Header */}
-      <div className="px-4 py-2 border-b flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Badge dot={recipient.isOnline} color="green" offset={[-6, 32]}>
-            <Avatar src={recipient.avatar} size={32}>
-              {!recipient.avatar && recipient.name[0]}
-            </Avatar>
-          </Badge>
-          <div>
-            <Typography.Text strong>{recipient.name}</Typography.Text>
-            <div className="text-xs text-gray-500">
-              {recipient.isOnline ? "Đang hoạt động" : recipient.lastActive}
-            </div>
-          </div>
-        </div>
-        <Button type="text" icon={<CloseOutlined />} onClick={onClose} />
+    <div className="chat-container">
+      <div className="user-selection">
+        <label>Chọn người nhận:</label>
+        <select value={receiver} onChange={(e) => setReceiver(e.target.value)}>
+          <option value="">Chọn người nhận</option>
+          {friends.map((user) => (
+            <option key={user} value={user}>
+              {user}
+            </option>
+          ))}
+        </select>
       </div>
 
-      {/* Messages Area */}
-      <div className="h-[400px] overflow-y-auto px-4 py-2">
-        {messages.map((message) => (
-          <ChatMessage key={message.id} message={message} />
+      <div className="messages-list">
+        {messages.map((msg, index) => (
+          <div
+            key={index}
+            className={`message ${
+              msg.sender === senderId ? "sent" : "received"
+            }`}
+          >
+            <strong>{msg.sender}:</strong> {msg.message}
+          </div>
         ))}
-        <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area */}
-      <div className="border-t p-2">
-        <div className="flex items-center gap-2">
-          <Input
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Aa"
-            bordered={false}
-            suffix={<SmileOutlined className="text-gray-400" />}
-          />
-          <div className="flex items-center gap-2 px-2">
-            <Button type="text" icon={<PictureOutlined />} size="small" />
-            <Button type="text" icon={<GifOutlined />} size="small" />
-            <Button type="text" icon={<AudioOutlined />} size="small" />
-            <Button
-              type="text"
-              icon={<SendOutlined />}
-              size="small"
-              onClick={handleSend}
-            />
-          </div>
-        </div>
-      </div>
+      <form onSubmit={handleSubmit} className="message-form">
+        <input
+          type="text"
+          value={currentMessage}
+          onChange={(e) => setCurrentMessage(e.target.value)}
+          placeholder="Nhập tin nhắn..."
+          disabled={!receiver} // Vô hiệu hóa nếu chưa chọn người nhận
+        />
+        <button type="submit" disabled={!receiver || !currentMessage.trim()}>
+          Gửi
+        </button>
+      </form>
     </div>
   );
 };
 
-// Example usage
-const ChatTest = () => {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      content: "1",
-      timestamp: new Date(),
-      isOwn: true,
-    },
-    {
-      id: "2",
-      content: "2",
-      timestamp: new Date(),
-      isOwn: true,
-    },
-    {
-      id: "3",
-      content: "3",
-      timestamp: new Date(),
-      isOwn: false,
-    },
-    {
-      id: "4",
-      content: "4",
-      timestamp: new Date(),
-      isOwn: false,
-    },
-  ]);
-
-  const handleSendMessage = (content: string) => {
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      content,
-      timestamp: new Date(),
-      isOwn: true,
-    };
-    setMessages([...messages, newMessage]);
-  };
-
-  return (
-    <ChatWindow
-      recipient={{
-        id: "1",
-        name: "A",
-        isOnline: true,
-        lastActive: "Hoạt động 26 phút trước",
-      }}
-      messages={messages}
-      onSendMessage={handleSendMessage}
-      onClose={() => console.log("Chat closed")}
-    />
-  );
-};
-
-export default ChatTest;
+export default ChatSocket;

@@ -1,6 +1,6 @@
 import { Col, Row } from "antd";
 import { ReactNode } from "react";
-import ChatTest from "../../components/Chat";
+import ChatSocket from "../../components/Chat";
 
 interface OrtherLayoutProps {
   navigation: ReactNode;
@@ -24,7 +24,7 @@ const OrtherLayout: React.FC<OrtherLayoutProps> = ({ navigation, content }) => {
       {/* Nội dung chính */}
       <Col className="content flex-1">{content}</Col>
       <div></div>
-      <ChatTest />
+      <ChatSocket senderId='Linh'/>
     </Row>
   );
 };
