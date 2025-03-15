@@ -17,7 +17,6 @@ interface ChatSocketProps {
 }
 
 const ChatSocket: React.FC<ChatSocketProps> = ({ senderId }) => {
-  // State để quản lý socket, tin nhắn và người nhận
   const [socket, setSocket] = useState<Socket | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentMessage, setCurrentMessage] = useState<string>("");
@@ -35,9 +34,11 @@ const ChatSocket: React.FC<ChatSocketProps> = ({ senderId }) => {
 
       setFriends(response.data.map((item: { id: string }) => item.id));
     } catch (error) {
-      notify("error", { message: "error" });
+      notify("error", { message: "Không thể tải danh sách bạn bè" });
     }
   };
+
+  // Khởi tạo socket và thiết lập các listeners
   useEffect(() => {
     getFriends();
 
@@ -47,53 +48,58 @@ const ChatSocket: React.FC<ChatSocketProps> = ({ senderId }) => {
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
     });
-
+    
     // Lắng nghe các sự kiện kết nối
     newSocket.on("connect", () => {
       console.log("Socket connected successfully");
-      // Thông báo user join
       newSocket.emit("join", senderId);
-      // Yêu cầu tải tin nhắn cũ
-      newSocket.emit("loadMessages");
     });
 
     // Lắng nghe tin nhắn mới
     newSocket.on("receiveMessage", (message: Message) => {
-      // Chỉ hiển thị tin nhắn nếu người dùng hiện tại là người gửi hoặc nhận
+      console.log("Tin nhắn mới:", message);
       if (message.sender === senderId || message.receiver === senderId) {
         setMessages((prevMessages) => [...prevMessages, message]);
       }
     });
 
-    // Lắng nghe toàn bộ tin nhắn từ server
-    newSocket.on("allMessages", (loadedMessages: Message[]) => {
-      // Lọc tin nhắn liên quan đến người dùng hiện tại
-      const userRelevantMessages = loadedMessages.filter(
-        (msg) => msg.sender === senderId || msg.receiver === senderId
-      );
-      setMessages(userRelevantMessages);
+    // Lắng nghe tin nhắn đã tải
+    newSocket.on('allMessages', (receivedMessages) => {
+      console.log('Nhận tin nhắn từ server:', receivedMessages);
+      if (Array.isArray(receivedMessages)) {
+        setMessages(receivedMessages);
+      } else {
+        console.error('Dữ liệu tin nhắn không hợp lệ:', receivedMessages);
+        setMessages([]);
+      }
     });
 
-    // Lắng nghe danh sách người dùng trực tuyến (nếu server hỗ trợ)
-    newSocket.on("onlineUsers", (users: string[]) => {
-      // Loại bỏ người dùng hiện tại khỏi danh sách
-      const filteredUsers = users.filter((user) => user !== senderId);
-      setFriends(filteredUsers);
-    });
+    // // Lắng nghe danh sách người dùng trực tuyến
+    // newSocket.on("onlineUsers", (users: string[]) => {
+    //   const filteredUsers = users.filter((user) => user !== senderId);
+    //   setFriends(filteredUsers);
+    // });
 
     // Xử lý lỗi kết nối
     newSocket.on("connect_error", (error) => {
       console.error("Socket connection error:", error);
+      notify("error", { message: "Lỗi kết nối socket" });
     });
 
-    // Lưu socket instance
     setSocket(newSocket);
 
-    // Cleanup khi component unmount
     return () => {
       newSocket.disconnect();
     };
   }, [senderId, socketUrl]);
+
+  // Load tin nhắn khi người dùng chọn receiver
+  useEffect(() => {
+    if (socket && receiver) {
+      console.log("Đang tải tin nhắn giữa:", senderId, "và", receiver);
+      socket.emit("loadMessages", [senderId, receiver]);
+    }
+  }, [socket, receiver, senderId]);
 
   // Hàm gửi tin nhắn
   const sendMessage = useCallback(() => {
@@ -105,13 +111,10 @@ const ChatSocket: React.FC<ChatSocketProps> = ({ senderId }) => {
         timestamp: Date.now(),
       };
 
-      // Gửi tin nhắn thông qua socket
+      console.log("Gửi tin nhắn:", messagePayload);
       socket.emit("sendMessage", messagePayload);
 
-      // Thêm tin nhắn vào state local ngay lập tức
       setMessages((prevMessages) => [...prevMessages, messagePayload]);
-
-      // Làm sạch input sau khi gửi
       setCurrentMessage("");
     }
   }, [socket, currentMessage, senderId, receiver]);
@@ -122,11 +125,31 @@ const ChatSocket: React.FC<ChatSocketProps> = ({ senderId }) => {
     sendMessage();
   };
 
+  // Hàm tải tin nhắn thủ công
+  const loadMessages = () => {
+    if (socket && receiver) {
+      console.log("Tải lại tin nhắn giữa:", senderId, "và", receiver);
+      
+    } else {
+      notify("warning", { message: "Vui lòng chọn người nhận trước" });
+    }
+  };
+
+  // Xử lý khi thay đổi người nhận
+  const handleReceiverChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newReceiver = e.target.value;
+    setReceiver(newReceiver);
+    setMessages([]); // Xóa tin nhắn cũ khi chuyển người nhận
+  };
+
   return (
     <div className="chat-container">
       <div className="user-selection">
         <label>Chọn người nhận:</label>
-        <select value={receiver} onChange={(e) => setReceiver(e.target.value)}>
+        <select 
+          value={receiver} 
+          onChange={handleReceiverChange}
+        >
           <option value="">Chọn người nhận</option>
           {friends.map((user) => (
             <option key={user} value={user}>
@@ -137,16 +160,25 @@ const ChatSocket: React.FC<ChatSocketProps> = ({ senderId }) => {
       </div>
 
       <div className="messages-list">
-        {messages.map((msg, index) => (
-          <div
-            key={index}
-            className={`message ${
-              msg.sender === senderId ? "sent" : "received"
-            }`}
-          >
-            <strong>{msg.sender}:</strong> {msg.message}
-          </div>
-        ))}
+        {messages.length > 0 ? (
+          messages.map((msg, index) => (
+            <div
+              key={index}
+              className={`message ${
+                msg.sender === senderId ? "sent" : "received"
+              }`}
+            >
+              <strong>{msg.sender}:</strong> {msg.message}
+              {msg.timestamp && (
+                <span className="timestamp">
+                  {new Date(msg.timestamp).toLocaleTimeString()}
+                </span>
+              )}
+            </div>
+          ))
+        ) : (
+          <p className="no-messages">Chưa có tin nhắn nào</p>
+        )}
       </div>
 
       <form onSubmit={handleSubmit} className="message-form">
@@ -155,12 +187,19 @@ const ChatSocket: React.FC<ChatSocketProps> = ({ senderId }) => {
           value={currentMessage}
           onChange={(e) => setCurrentMessage(e.target.value)}
           placeholder="Nhập tin nhắn..."
-          disabled={!receiver} // Vô hiệu hóa nếu chưa chọn người nhận
+          disabled={!receiver}
         />
         <button type="submit" disabled={!receiver || !currentMessage.trim()}>
           Gửi
         </button>
       </form>
+      <button 
+        onClick={loadMessages} 
+        disabled={!receiver}
+        className="load-button"
+      >
+        Tải tin nhắn
+      </button>
     </div>
   );
 };
