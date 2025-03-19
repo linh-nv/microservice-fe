@@ -38,9 +38,9 @@ export interface FriendProfile {
         role: string;
         status: string;
         params: {};
-        fullName: string;
+        name: string;
       };
     }
   ];
-  fullName: string;
+  name: string;
 }

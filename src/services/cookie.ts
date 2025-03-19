@@ -1,67 +1,65 @@
 import Cookies from "js-cookie";
+import axiosInstance from "./axios";
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export const cookie = {
-  setToken(tokenData: {
-    token: string;
-    refreshToken: string;
-    expiredAt: string;
-    deviceId?: string;
-  }) {
-    const { token, refreshToken, expiredAt, deviceId } = tokenData;
+  async setToken(tokenData: any) {
+    const { access_token, refresh_token, expires_in, refresh_expires_in } =
+      tokenData || {};
 
-    if (!token || !refreshToken || !expiredAt) {
-      console.error(
-        "Access token, refresh token, or expiration date is missing."
-      );
+    if (!access_token || !refresh_token) {
+      console.error("Access token or refresh token is missing.");
       return;
     }
 
-    const accessTokenExpires = new Date(expiredAt);
-    const refreshTokenExpires = new Date();
-    refreshTokenExpires.setDate(refreshTokenExpires.getDate() + 7);
+    const accessTokenExpires = new Date(
+      new Date().getTime() + expires_in * 60 * 1000
+    );
+    const refreshTokenExpires = new Date(
+      new Date().getTime() + refresh_expires_in * 60 * 1000
+    );
 
-    if (deviceId) {
-      Cookies.set("deviceId", deviceId);
-    }
-    Cookies.set("access_token", token);
-    Cookies.set("refresh_token", refreshToken);
+    Cookies.set("client_access_token", access_token, {
+      expires: accessTokenExpires,
+    });
+    Cookies.set("client_refresh_token", refresh_token, {
+      expires: refreshTokenExpires,
+    });
     Cookies.set(
-      "access_token_expires",
+      "client_access_token_expires",
       accessTokenExpires.getTime().toString()
     );
     Cookies.set(
-      "refresh_token_expires",
+      "client_refresh_token_expires",
       refreshTokenExpires.getTime().toString()
     );
   },
 
-  getDeviceId() {
-    return Cookies.get("deviceId");
+  getId() {
+    return Cookies.get("client_id");
   },
 
   getAccessToken() {
-    return Cookies.get("access_token");
+    return Cookies.get("client_access_token");
   },
 
   getRefreshToken() {
-    return Cookies.get("refresh_token");
+    return Cookies.get("client_refresh_token");
   },
 
   getAccessTokenExpires() {
-    const expires = Cookies.get("access_token_expires");
-    return expires ? parseInt(expires, 10) : null;
+    return Cookies.get("client_access_token_expires");
   },
 
   getRefreshTokenExpires() {
-    const expires = Cookies.get("refresh_token_expires");
-    return expires ? parseInt(expires, 10) : null;
+    return Cookies.get("client_refresh_token_expires");
   },
 
   removeTokens() {
-    Cookies.remove("deviceId");
-    Cookies.remove("access_token");
-    Cookies.remove("refresh_token");
-    Cookies.remove("access_token_expires");
-    Cookies.remove("refresh_token_expires");
+    Cookies.remove("client_access_token");
+    Cookies.remove("client_refresh_token");
+    Cookies.remove("client_access_token_expires");
+    Cookies.remove("client_refresh_token_expires");
   },
 };

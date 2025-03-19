@@ -59,7 +59,7 @@ const FriendDetail: React.FC = () => {
               </div>
 
               <div className="profile-info">
-                <Title level={2}>{friend?.fullName}</Title>
+                <Title level={2}>{friend?.name}</Title>
                 <Text className="friend-count">10 người bạn · 2 bạn chung</Text>
                 <div className="friend-avatars">
                   {friend?.friendProfiles.slice(0, 2).map((friend) => (
@@ -119,7 +119,7 @@ const FriendDetail: React.FC = () => {
                                 "https://static.vecteezy.com/system/resources/previews/021/495/985/non_2x/facebook-social-media-logo-icon-free-png.png"
                               }
                             />
-                            <p>{friend.user.fullName}</p>
+                            <p>{friend.user.name}</p>
                           </Link>
                         </>
                       ))}
@@ -132,7 +132,7 @@ const FriendDetail: React.FC = () => {
               {friend && (
                 <SocialCard
                   author={{
-                    name: friend.fullName,
+                    name: friend.name,
                     avatar: friend.profile.avatarUrl,
                     timestamp: new Date("2024-01-15"),
                   }}

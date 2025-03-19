@@ -7,7 +7,7 @@ export interface UserProfile {
 export interface FriendRequest {
   id: string;
   senderId: string;
-  fullName: string;
+  name: string;
   profile: UserProfile;
   createdAt: Date;
 }

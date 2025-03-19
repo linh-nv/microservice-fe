@@ -1,26 +1,25 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import Cookies from "js-cookie";
+import { routes } from "../../routes/routes";
+import { Spin, message } from "antd";
 
 const AuthCallback = () => {
   const navigate = useNavigate();
+  const { token } = useParams();
 
   useEffect(() => {
-    const token = sessionStorage.getItem("temp_auth_token");
-
     if (token) {
-      Cookies.set("access_token", token);
+      Cookies.set("refresh_token", token);
 
-      sessionStorage.removeItem("temp_auth_token");
-
-      navigate("/home");
+      navigate(routes.home);
     } else {
-      console.error("Token không tìm thấy");
-      navigate("/login");
+      message.error("Token không tìm thấy");
+      navigate(routes.auth.login);
     }
   }, [navigate]);
 
-  return <div>Đang xử lý đăng nhập...</div>;
+  return <Spin />;
 };
 
 export default AuthCallback;

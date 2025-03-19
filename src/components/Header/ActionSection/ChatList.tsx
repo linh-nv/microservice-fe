@@ -3,6 +3,7 @@ import { Input, List, Avatar, Badge, Typography, Space } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
+import { Friends } from "../../../shared/interface";
 
 // Define our interfaces for type safety
 interface Message {
@@ -21,14 +22,14 @@ interface ChatUser {
 }
 
 interface ChatListProps {
-  users: ChatUser[];
+  users: Friends[];
   onUserSelect?: (userId: string) => void;
   selectedUserId?: string;
 }
 
 // Component for the search input
 const SearchBar: React.FC = () => (
-    <Input
+  <Input
     prefix={<SearchOutlined className="text-gray-400" />}
     placeholder="Tìm kiếm đoạn chat"
     className="rounded-full bg-gray-100 mb-2"
@@ -86,27 +87,31 @@ const ChatList: React.FC<ChatListProps> = ({
             onClick={() => onUserSelect?.(user.id)}
           >
             <List.Item.Meta
-            className="px-2"
+              className="px-2"
               avatar={
-                <Badge dot={user.isOnline} offset={[-6, 32]} color="green">
-                  <Avatar src={user.avatar} size={40} className="flex-shrink-0">
-                    {!user.avatar && user.name[0]}
+                <Badge dot={true} offset={[-6, 32]} color="green">
+                  <Avatar
+                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRMV_yN4QCctrsCiOiQynignWqhrH35xWCRpA&s"
+                    size={40}
+                    className="flex-shrink-0"
+                  >
+                    {user.name[0]}
                   </Avatar>
                 </Badge>
               }
               title={
                 <Space className="w-full justify-between">
                   <Typography.Text strong>{user.name}</Typography.Text>
-                  {user.unreadCount ? (
-                    <Badge
-                      count={user.unreadCount}
-                      size="small"
-                      className="ml-2"
-                    />
+                  {true ? (
+                    <Badge count={1} size="small" className="ml-2" />
                   ) : null}
                 </Space>
               }
-              description={<MessagePreview message={user.lastMessage} />}
+              description={
+                <MessagePreview
+                  message={{ id: "1", content: "test", timestamp: new Date() }}
+                />
+              }
             />
           </List.Item>
         )}

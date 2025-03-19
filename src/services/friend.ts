@@ -2,10 +2,10 @@ import { GetFriendsOptions } from "../shared/interface";
 import axiosInstance from "./axios";
 
 export const friendService = {
-  async getPendingRequests(options: number) {
+  async getPendingRequests(page: number) {
     const response = await axiosInstance.get("/friends/requests/pending", {
       params: {
-        options,
+        page,
       },
     });
 
@@ -16,20 +16,20 @@ export const friendService = {
     return await axiosInstance.delete(`/friends/requests/${receiverId}/reject`);
   },
 
-  async getSendPendingRequests(options: number) {
+  async getSendPendingRequests(page: number) {
     const response = await axiosInstance.get("/friends/requests/send/pending", {
       params: {
-        options,
+        page,
       },
     });
 
     return response.data;
   },
 
-  async getFriendSuggestions(options: number) {
+  async getFriendSuggestions(page: number) {
     const response = await axiosInstance.get("/friends/suggestions", {
       params: {
-        options,
+        page,
       },
     });
     return response.data;
@@ -52,7 +52,7 @@ export const friendService = {
   async getFriends(options?: GetFriendsOptions) {
     const response = await axiosInstance.get(`/friends`, {
       params: {
-        options,
+        ...options,
       },
     });
 

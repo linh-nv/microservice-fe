@@ -3,13 +3,15 @@ import { Badge, Popover } from "antd";
 import "../styles.scss";
 import { FaFacebookMessenger, FaThList } from "react-icons/fa";
 import { IoNotificationsSharp } from "react-icons/io5";
-
+import ChatSocket from "../../Chat";
+import { cookie } from "../../../services/cookie";
 interface ActionSectionProps {
   activeAction: string;
   setActiveAction: (action: string) => void;
   contentMenu: ReactNode;
   contentMessage: ReactNode;
   contentNotify: ReactNode;
+  receiver: number | null;
 }
 
 export const ActionSection: React.FC<ActionSectionProps> = ({
@@ -18,7 +20,9 @@ export const ActionSection: React.FC<ActionSectionProps> = ({
   contentMenu,
   contentMessage,
   contentNotify,
+  receiver,
 }) => {
+  const userId = cookie.getId();
   return (
     <div className="flex items-center space-x-2">
       <Popover
@@ -100,6 +104,8 @@ export const ActionSection: React.FC<ActionSectionProps> = ({
           </button>
         </Badge>
       </Popover>
+      {receiver && userId && <ChatSocket senderId={userId.toString()} receiverId={receiver.toString()} />}
+
     </div>
   );
 };

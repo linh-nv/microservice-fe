@@ -26,7 +26,7 @@ export interface GetFriendsOptions {
 }
 
 export interface Friends {
-  id: string;
+  id: any;
   firstName: string;
   lastName: string;
   email: string;
@@ -38,5 +38,5 @@ export interface Friends {
     birthday?: string;
     location?: string;
   };
-  fullName: string;
+  name: string;
 }

@@ -67,7 +67,7 @@ export const InfiniteList: React.FC<InfiniteListProps> = ({
                       }
                     />
                   }
-                  title={<strong>{item.fullName}</strong>}
+                  title={<strong>{item.name}</strong>}
                   description={item.email}
                 />
               </div>

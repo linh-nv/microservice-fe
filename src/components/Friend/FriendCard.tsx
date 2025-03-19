@@ -140,7 +140,7 @@ export const FriendCard: React.FC<FriendCardProps> = ({
         title={
           <>
             <h3 className="text-lg font-semibold mb-1 text-gray-800">
-              {friend.fullName}
+              {friend.name}
             </h3>
             <div className="flex items-center gap-2 mb-4">
               <span className="text-gray-500 text-sm">

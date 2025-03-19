@@ -28,18 +28,30 @@ export const authService = {
     return response.data;
   },
 
+  // async refreshToken() {
+  //   const refreshToken = cookie.getRefreshToken();
+  //   if (!refreshToken) throw new Error("No refresh token available");
+  //   console.log(refreshToken);
+    
+  //   const response: AxiosResponse = await axios.post(`${API_BASE_URL}/refresh-token`, {
+  //       refreshToken: refreshToken,
+  //       deviceId: cookie.getDeviceId(),
+  //   });
+  //   console.log(response.data);
+    
+  //   cookie.setToken(response.data);
+
+  //   return response.data;
+  // },
+
   async refreshToken() {
     const refreshToken = cookie.getRefreshToken();
     if (!refreshToken) throw new Error("No refresh token available");
-    console.log(refreshToken);
-    
-    const response: AxiosResponse = await axios.post(`${API_BASE_URL}/refresh-token`, {
-        refreshToken: refreshToken,
-        deviceId: cookie.getDeviceId(),
+
+    const response = await axios.post(`http://localhost:8000/api/refresh`, {
+      refresh_token: refreshToken,
     });
-    console.log(response.data);
-    
-    cookie.setToken(response.data);
+    cookie.setToken(response.data.data);
 
     return response.data;
   },

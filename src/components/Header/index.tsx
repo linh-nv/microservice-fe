@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Input, Avatar, Dropdown } from "antd";
 import { SearchOutlined, UserOutlined } from "@ant-design/icons";
 import { NavigationSection } from "./NavigationSection";
@@ -7,6 +7,9 @@ import { PROFILE_MENU_ITEMS } from "../../constants/navigationConfig";
 import "./styles.scss";
 import { useActiveRoute } from "../../hook/useActiveRoute";
 import ChatList from "./ActionSection/ChatList";
+import { Friends, GetFriendsOptions } from "../../shared/interface";
+import { friendService } from "../../services/friend";
+import { useNotification } from "../../hook/notify";
 
 interface HeaderProps {
   username?: string;
@@ -22,6 +25,14 @@ const Header: React.FC<HeaderProps> = ({
   const [searchText, setSearchText] = useState<string>("");
   const [activeNav, setActiveNav] = useState("home");
   const [activeAction, setActiveAction] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [friends, setFriends] = useState<Friends[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [totalFriend, setTotalFriend] = useState(1);
+  const { notify } = useNotification();
+  const [receiver, setReceiver] = useState<number | null>(null);
 
   useActiveRoute(setActiveNav);
 
@@ -31,22 +42,40 @@ const Header: React.FC<HeaderProps> = ({
     onSearch?.(value);
   };
 
-  const mockUsers = [
-    {
-      id: "1",
-      name: "a",
-      avatar:
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/2021_Facebook_icon.svg/1200px-2021_Facebook_icon.svg.png",
-      lastMessage: {
-        id: "m1",
-        content: "123123",
-        timestamp: new Date(Date.now() - 9 * 60 * 1000), // 9 minutes ago
-      },
-      isOnline: true,
-      unreadCount: 2,
-    },
-    // Add more mock users as needed
-  ];
+  const loadFriends = async (options: GetFriendsOptions) => {
+    if (loading) {
+      return;
+    }
+    try {
+      setLoading(true);
+
+      const response = await friendService.getFriends(options);
+
+      if (options.page === 1) {
+        setFriends(response.data);
+        setTotalFriend(response.total);
+      } else {
+        setFriends((prev) => [...prev, ...response.data]);
+      }
+
+      setCurrentPage(response.currentPage);
+      setTotalPages(response.totalPages);
+      setHasMore(response.currentPage < response.totalPages);
+    } catch (error) {
+      notify("error", { message: "Lỗi" });
+      setLoading(false);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeAction === "message") {
+      loadFriends({ page: currentPage });
+    } else {
+      setFriends([]);
+    }
+  }, [activeAction]);
 
   return (
     <header className="bg-white shadow-sm fixed top-0 left-0 right-0 z-50">
@@ -82,15 +111,16 @@ const Header: React.FC<HeaderProps> = ({
           {/* User Actions */}
           <div className="flex justify-end items-center flex-1 space-x-2">
             <ActionSection
+              receiver={receiver}
               activeAction={activeAction}
               setActiveAction={setActiveAction}
               contentMenu={<></>}
               contentMessage={
                 <ChatList
-                  users={mockUsers}
-                  onUserSelect={(userId) =>
-                    console.log("Selected user:", userId)
-                  }
+                  users={friends}
+                  onUserSelect={(userId) => {
+                    setReceiver(parseInt(userId));
+                  }}
                 />
               }
               contentNotify={<></>}
