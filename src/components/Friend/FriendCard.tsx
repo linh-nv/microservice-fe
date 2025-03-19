@@ -1,11 +1,6 @@
 import React from "react";
-import { Avatar, Button, Card } from "antd";
-import {
-  UserOutlined,
-  CheckCircleOutlined,
-  CloseCircleOutlined,
-  UserAddOutlined,
-} from "@ant-design/icons";
+import { Button, Card } from "antd";
+import { CheckCircleOutlined, CloseCircleOutlined } from "@ant-design/icons";
 import { FriendRequest } from "../../types/friend";
 import Meta from "antd/es/card/Meta";
 

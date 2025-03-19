@@ -26,7 +26,7 @@ axiosInstance.interceptors.request.use(
         accessToken = response.data.token;
       } catch (error) {
         cookie.removeTokens();
-        window.location.href = "auth/login";
+        window.location.href = routes.auth.login;
 
         return Promise.reject(error);
       }
@@ -55,8 +55,8 @@ axiosInstance.interceptors.response.use(
         return axiosInstance(error.config);
       }
     } catch (refreshError) {
-      // cookie.removeTokens();
-      // location.replace(routes.errors[401]);
+      cookie.removeTokens();
+      location.replace(routes.errors[401]);
 
       return Promise.reject(refreshError);
     }

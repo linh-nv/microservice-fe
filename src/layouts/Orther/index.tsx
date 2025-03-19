@@ -1,5 +1,6 @@
 import { Col, Row } from "antd";
 import { ReactNode } from "react";
+import ChatSocket from "../../components/Chat";
 
 interface OrtherLayoutProps {
   navigation: ReactNode;
@@ -17,12 +18,13 @@ const OrtherLayout: React.FC<OrtherLayoutProps> = ({ navigation, content }) => {
         xl={5}
         className="navigate bg-white min-h-screen shadow-md"
       >
-        <div className="fixed w-1/5">{navigation}</div>
+        <div className="fixed w-[21%]">{navigation}</div>
       </Col>
 
       {/* Nội dung chính */}
       <Col className="content flex-1">{content}</Col>
       <div></div>
+      <ChatSocket senderId='Linh'/>
     </Row>
   );
 };

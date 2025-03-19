@@ -1,9 +1,6 @@
 import { GoHomeFill } from "react-icons/go";
 import { HiUserGroup } from "react-icons/hi";
-import { FaFacebookMessenger, FaThList } from "react-icons/fa";
-import { IoNotificationsSharp } from "react-icons/io5";
 import {
-  ActionItem,
   NavigationItem,
   ProfileMenuItem,
 } from "../types/navigation";
@@ -21,26 +18,6 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
     path: routes.friend.home,
     icon: <HiUserGroup />,
     label: "Groups",
-  },
-];
-
-export const ACTION_ITEMS: ActionItem[] = [
-  {
-    id: "menu",
-    icon: <FaThList />,
-    label: "Menu",
-  },
-  {
-    id: "message",
-    icon: <FaFacebookMessenger />,
-    label: "Messages",
-    badge: 0,
-  },
-  {
-    id: "notification",
-    icon: <IoNotificationsSharp />,
-    label: "Notifications",
-    badge: 0,
   },
 ];
 

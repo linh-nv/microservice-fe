@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { io } from "socket.io-client";
+import OrtherLayout from "../../layouts/Orther";
 
 const socketUrl = `${window.location.protocol}//${window.location.hostname}:8080`;
 const socket = io(socketUrl);
@@ -8,7 +9,10 @@ interface Message {
   message: string;
 }
 
-const ChatUI = () => {
+const Navigation = () => {
+  return <></>
+}
+const Content = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [message, setMessage] = useState("");
   const [username, setUsername] = useState("");
@@ -81,6 +85,10 @@ const ChatUI = () => {
       </div>
     </div>
   );
+};
+
+const ChatUI = () => {
+  return <OrtherLayout navigation={Navigation()} content={Content()} />;
 };
 
 export default ChatUI;

@@ -4,12 +4,15 @@ import { friendService } from "../../services/friend";
 import { useNotification } from "../../hook/notify";
 import { Friends, GetFriendsOptions } from "../../shared/interface";
 import { InfiniteList } from "../../components/Navbar/InfiniteList";
-import { MenuProps } from "antd";
+import { Empty, Input, MenuProps } from "antd";
 import { ImEyeBlocked } from "react-icons/im";
 import { MdOutlineBlock } from "react-icons/md";
-import { Outlet } from "react-router-dom";
+import { useNavigate, useOutlet } from "react-router-dom";
 import { RiMessengerLine } from "react-icons/ri";
 import { LiaUserTimesSolid } from "react-icons/lia";
+import Breadcrumb from "../../components/Breadcrumb";
+import { routes } from "../../routes/routes";
+import { SearchOutlined } from "@ant-design/icons";
 
 interface MenuItemsProps {
   id: string;
@@ -51,6 +54,12 @@ const menuItems = ({ id, lastName }: MenuItemsProps): MenuProps["items"] => [
   },
 ];
 
+const breadcrumbItems = [
+  {
+    href: routes.friend.home,
+    title: "Bạn bè",
+  },
+];
 const Navigation = () => {
   const [loading, setLoading] = useState(false);
   const [friends, setFriends] = useState<Friends[]>([]);
@@ -58,6 +67,8 @@ const Navigation = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalFriend, setTotalFriend] = useState(1);
+  const navigate = useNavigate();
 
   const loadFriends = async (options: GetFriendsOptions) => {
     if (loading) {
@@ -70,6 +81,7 @@ const Navigation = () => {
 
       if (options.page === 1) {
         setFriends(response.data);
+        setTotalFriend(response.total);
       } else {
         setFriends((prev) => [...prev, ...response.data]);
       }
@@ -96,17 +108,50 @@ const Navigation = () => {
   };
 
   return (
-    <InfiniteList
-      data={friends}
-      hasMore={hasMore}
-      loadMore={loadMore}
-      menuItems={menuItems}
-    />
+    <div className="flex flex-col">
+      <div className="mx-3  border-b pb-3">
+        <Breadcrumb
+          title="Danh sách bạn bè"
+          onBack={() => navigate(routes.friend.home)}
+          items={breadcrumbItems}
+        />
+        <Input
+          prefix={<SearchOutlined className="text-gray-400" />}
+          placeholder="Tìm kiếm bạn bè"
+          className="rounded-full bg-gray-100"
+          bordered={false}
+          // value={searchText}
+          // onChange={handleSearch}
+        />
+      </div>
+      <strong className="mx-3 py-2">{`${totalFriend} người bạn`}</strong>
+      <InfiniteList
+        data={friends}
+        hasMore={hasMore}
+        loadMore={loadMore}
+        menuItems={menuItems}
+      />
+    </div>
   );
 };
 
 const Content = () => {
-  return <Outlet />;
+  const outlet = useOutlet();
+
+  return (
+    <div className="content-container container mx-auto w-full max-w-screen-xl xl:px-20">
+      {outlet || (
+        <Empty
+          className="flex flex-col h-screen w-full text-center items-center justify-center"
+          description={
+            <div className="default-content">
+              <p>Please select a section to get started.</p>
+            </div>
+          }
+        />
+      )}
+    </div>
+  );
 };
 
 const AllFriend = () => {
