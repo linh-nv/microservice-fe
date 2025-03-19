@@ -1,7 +1,6 @@
 import axios from "axios";
 import { cookie } from "./cookie";
 import { authService } from "./auth";
-import { routes } from "../routes/routes";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 

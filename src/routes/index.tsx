@@ -3,6 +3,7 @@ import { AuthLayout } from "../layouts/Auth";
 import { lazy } from "react";
 import { routes } from "./routes";
 import { AppLayout } from "../layouts/App";
+import AuthCallback from "../pages/Login/redirect";
 
 const Login = lazy(() => import("../pages/Login"));
 const Register = lazy(() => import("../pages/Register"));
@@ -34,6 +35,7 @@ const App = () => {
         </Route>
         <Route path={routes.chat} element={<ChatUI />} />
       </Route>
+      <Route path="/auth/callback" element={<AuthCallback />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
