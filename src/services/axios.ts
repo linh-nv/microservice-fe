@@ -3,7 +3,6 @@ import { cookie } from "./cookie";
 import { authService } from "./auth";
 import { routes } from "../routes/routes";
 import { message } from "antd";
-import { log } from "console";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const axiosInstance = axios.create({
@@ -40,7 +39,7 @@ axiosInstance.interceptors.request.use(
       console.log(cookie.getId());
     } else {
       message.error("Vui lòng đăng nhập lại");
-      window.location.href = "http://localhost:8081/";
+      window.location.href = "http://localhost:8080/";
     }
 
     return config;

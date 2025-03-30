@@ -2,9 +2,11 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import io, { Socket } from "socket.io-client";
 import { useNotification } from "../../hook/notify";
 import { formatDistanceToNow } from "date-fns";
-import { vi } from "date-fns/locale";
+import { se, vi } from "date-fns/locale";
 import { Send, Paperclip, ChevronDown, ChevronUp } from "react-feather";
 import { Avatar } from "antd";
+import { SmileFilled, UserOutlined } from "@ant-design/icons";
+import { userService } from "../../services/user";
 
 // Interface definitions
 interface Message {
@@ -28,8 +30,6 @@ interface ChatSocketProps {
   senderId: string;
   receiverId: string | null;
   receiverInfo?: User;
-  onMinimize?: () => void;
-  isMinimized?: boolean;
   className?: string;
 }
 
@@ -37,8 +37,6 @@ const ChatSocket: React.FC<ChatSocketProps> = ({
   senderId,
   receiverId,
   receiverInfo,
-  onMinimize,
-  isMinimized = false,
   className = "",
 }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -51,9 +49,16 @@ const ChatSocket: React.FC<ChatSocketProps> = ({
   const messageInputRef = useRef<HTMLInputElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const { notify } = useNotification();
+  const [isMinimized, setIsMinimized] = useState<boolean>(false);
+
+  const onMinimize = (state: boolean) => {
+    console.log("Minimize chat window", isMinimized);
+
+    setIsMinimized(state);
+  };
 
   // Get socket URL from environment or use current location
-  const socketUrl = `${window.location.protocol}//${window.location.hostname}:8080`;
+  const socketUrl = import.meta.env.VITE_SOCKET_URL || "http://localhost:3030";
 
   // Auto-scroll to the latest message
   const scrollToBottom = () => {
@@ -223,7 +228,7 @@ const ChatSocket: React.FC<ChatSocketProps> = ({
     messages.forEach((message) => {
       const date = message.timestamp
         ? new Date(message.timestamp).toLocaleDateString()
-        : "Unknown Date";
+        : "Before Date";
 
       if (!groups[date]) {
         groups[date] = [];
@@ -255,7 +260,6 @@ const ChatSocket: React.FC<ChatSocketProps> = ({
 
   // Get message groups for display
   const messageGroups = groupMessagesByDate(messages);
-  const chatHeaderName = receiverInfo?.name || receiverId || "Chat";
 
   // Handle keyboard shortcuts
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -265,32 +269,54 @@ const ChatSocket: React.FC<ChatSocketProps> = ({
     }
   };
 
+  const [receiverProfile, setReceiverProfile] = useState<any | null>(null);
+  const getReceiverProfile = async (receiverId: string) => {
+    try {
+      const response = await userService.getUser(receiverId);
+
+      setReceiverProfile(response);
+    } catch (error) {
+      console.error("Failed to fetch user profile:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (receiverId) {
+      getReceiverProfile(receiverId);
+    }
+  }, [receiverId]);
   return (
     <div
       ref={chatContainerRef}
       className={`chat-socket flex flex-col ${
-        isMinimized ? "h-12" : "h-96"
+        isMinimized ? "h-14" : "h-96"
       } w-80 fixed bottom-4 right-4 bg-white rounded-lg shadow-lg overflow-hidden transition-all duration-300 ${className}`}
     >
       {/* Chat Header */}
       <div
         className="chat-header flex justify-between items-center p-3 bg-blue-600 text-white cursor-pointer"
-        onClick={onMinimize}
+        onClick={() => onMinimize(!isMinimized)}
       >
         <div className="flex items-center space-x-2">
-          {receiverInfo?.avatar ? (
-            <Avatar
-              src={receiverInfo.avatar}
-              alt={receiverInfo.name || "User"}
-              className="w-8 h-8"
-            />
-          ) : (
-            <div className="w-8 h-8 rounded-full bg-blue-400 flex items-center justify-center text-white font-semibold">
-              {chatHeaderName.charAt(0).toUpperCase()}
-            </div>
-          )}
+          {/* {receiverInfo?.avatar ? ( */}
+          <Avatar
+            src={
+              receiverProfile?.profile?.avatarUrl ||
+              "https://static.vecteezy.com/system/resources/thumbnails/009/292/244/small_2x/default-avatar-icon-of-social-media-user-vector.jpg"
+            }
+            // alt={receiverInfo.name || "User"}
+            className="w-8 h-8"
+            icon={<UserOutlined />}
+          />
+          {/* // ) : (
+          //   <div className="w-8 h-8 rounded-full bg-blue-400 flex items-center justify-center text-white font-semibold">
+          //     {chatHeaderName.charAt(0).toUpperCase()}
+          //   </div>
+          // )} */}
           <div className="flex flex-col">
-            <span className="font-medium text-sm">{chatHeaderName}</span>
+            <span className="font-medium text-sm">
+              {receiverProfile?.name || "Người dùng"}
+            </span>
             {receiverInfo?.status && (
               <span className="text-xs opacity-80">
                 {receiverInfo.status === "online"
@@ -305,7 +331,10 @@ const ChatSocket: React.FC<ChatSocketProps> = ({
             )}
           </div>
         </div>
-        <button className="focus:outline-none">
+        <button
+          className="focus:outline-none bg-transparent hover:border-transparent"
+          onClick={() => onMinimize(false)}
+        >
           {isMinimized ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
         </button>
       </div>
@@ -341,11 +370,11 @@ const ChatSocket: React.FC<ChatSocketProps> = ({
                       key={msg.id || idx}
                       className={`message-wrapper flex ${
                         isSender ? "justify-end" : "justify-start"
-                      } mb-2`}
+                      } mb-1`}
                     >
-                      {!isSender && showAvatar && (
+                      {/* {!isSender && showAvatar && (
                         <div className="flex-shrink-0 mr-2">
-                          {/* {receiverInfo?.avatar ? (
+                          {receiverInfo?.avatar ? (
                             <Avatar
                               src={receiverInfo.avatar}
                               alt={receiverInfo.name || "User"}
@@ -357,9 +386,9 @@ const ChatSocket: React.FC<ChatSocketProps> = ({
                                 .charAt(0)
                                 .toUpperCase()}
                             </div>
-                          )} */}
+                          )}
                         </div>
-                      )}
+                      )} */}
 
                       <div
                         className={`message ${
@@ -376,7 +405,7 @@ const ChatSocket: React.FC<ChatSocketProps> = ({
                         >
                           {msg.message}
                         </div>
-                        <div
+                        {/* <div
                           className={`message-meta text-xs mt-1 flex items-center ${
                             isSender ? "justify-end" : "justify-start"
                           }`}
@@ -404,7 +433,7 @@ const ChatSocket: React.FC<ChatSocketProps> = ({
                               )}
                             </span>
                           )}
-                        </div>
+                        </div> */}
                       </div>
                     </div>
                   );
@@ -430,15 +459,15 @@ const ChatSocket: React.FC<ChatSocketProps> = ({
           <div className="flex items-center space-x-2">
             <button
               type="button"
-              className="p-2 rounded-full text-gray-500 hover:bg-gray-100 focus:outline-none"
+              className="p-2 rounded-full bg-white focus:outline-none"
               onClick={() => setShowEmojiPicker(!showEmojiPicker)}
             >
-              {/* <EmojiSmile size={18} /> */} =)))
+              <SmileFilled size={18} />
             </button>
 
             <button
               type="button"
-              className="p-2 rounded-full text-gray-500 hover:bg-gray-100 focus:outline-none"
+              className="p-2 rounded-full bg-white focus:outline-none"
             >
               <Paperclip size={18} />
             </button>
